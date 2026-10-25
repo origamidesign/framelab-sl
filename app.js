@@ -42,7 +42,7 @@ $('download-script').onclick=()=>download(new Blob([$ ('code').textContent],{typ
 function frameAspect(bitmap,crop){const r=cropRect(bitmap,crop);return r.width/r.height;}
 let cropDrag=null;
 function renderCrop(){
- const s=current(),canvas=$('crop-canvas');$('crop-section').hidden=!s.frames.length;if(!s.frames.length)return;
+ const s=current(),canvas=$('crop-canvas');$('crop-controls').hidden=!s.frames.length;$('crop-empty').hidden=!!s.frames.length;$('crop-reset').disabled=!s.frames.length||busy;if(!s.frames.length)return;
  const slider=$('crop-frame');slider.max=s.frames.length-1;slider.value=Math.min(Number(slider.value),s.frames.length-1);
  const image=s.frames[Number(slider.value)].bitmap;canvas.width=image.width;canvas.height=image.height;
  const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const r=cropRect(image,s.crop);
