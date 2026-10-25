@@ -1,6 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {gridFor,scriptFor,validUUID,cropRect,drawFit} from '../core.mjs';
+import {gridFor,scriptFor,validUUID,cropRect,drawFit,videoFrameCount} from '../core.mjs';
+test('la vidéo entière est échantillonnée aux FPS choisis',()=>{
+ assert.equal(videoFrameCount(12,10),120);
+ assert.equal(videoFrameCount(3.25,10),33);
+ assert.equal(videoFrameCount(120,.5),60);
+});
+test('un dépassement demande de réduire les FPS sans tronquer la vidéo',()=>{
+ assert.throws(()=>videoFrameCount(30,10),/8,53 FPS/);
+ assert.equal(videoFrameCount(30,8.53),256);
+ for(const fps of [NaN,Infinity,0,61])assert.throws(()=>videoFrameCount(30,fps));
+});
 test('le crop normalisé conserve la même zone sur des images de tailles différentes',()=>{
  const crop={x:.25,y:.1,width:.5,height:.6};
  assert.deepEqual(cropRect({width:1000,height:500},crop),{x:250,y:50,width:500,height:300});

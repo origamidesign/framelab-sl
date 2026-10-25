@@ -1,3 +1,13 @@
+export function videoFrameCount(duration,fps) {
+  if(!Number.isFinite(duration)||duration<=0)throw new Error('Durée vidéo invalide.');
+  if(!Number.isFinite(fps)||fps<.01||fps>60)throw new Error('Choisissez des FPS entre 0,01 et 60.');
+  const count=Math.ceil(duration*fps);
+  if(count>256){
+    const recommended=Math.floor(256/duration*100)/100;
+    throw new Error(`${count} images pour la vidéo entière. Limite : 256 images. ${recommended>=.01?`Choisissez au maximum ${recommended.toLocaleString('fr-FR')} FPS.`:'Cette vidéo est trop longue pour cette limite.'}`);
+  }
+  return count;
+}
 export function gridFor(count, aspect = 1, requested = 'auto') {
   if (!count) return {cols:1,rows:1};
   const powers=[1,2,4,8,16,32,64,128];
