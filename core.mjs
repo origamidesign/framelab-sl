@@ -11,11 +11,18 @@ export function gridFor(count, aspect = 1, requested = 'auto') {
   if(!best) throw new Error('Cette grille ne peut pas contenir toutes les images. Augmentez le nombre de colonnes.');
   return {cols:best.cols,rows:best.rows};
 }
-export function drawFit(ctx,image,x,y,w,h,fit='contain') {
-  const iw=image.width,ih=image.height;
+export function cropRect(image,crop) {
+  const width=image.width,height=image.height;
+  if(!crop) return {x:0,y:0,width,height};
+  const x=Math.max(0,Math.min(.99,Number(crop.x)||0));
+  const y=Math.max(0,Math.min(.99,Number(crop.y)||0));
+  return {x:x*width,y:y*height,width:Math.max(.01,Math.min(1-x,Number(crop.width)||1))*width,height:Math.max(.01,Math.min(1-y,Number(crop.height)||1))*height};
+}
+export function drawFit(ctx,image,x,y,w,h,fit='contain',crop=null) {
+  const source=cropRect(image,crop),iw=source.width,ih=source.height;
   const scale=fit==='cover'?Math.max(w/iw,h/ih):Math.min(w/iw,h/ih);
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
-  ctx.drawImage(image,x+(w-iw*scale)/2,y+(h-ih*scale)/2,iw*scale,ih*scale);ctx.restore();
+  ctx.drawImage(image,source.x,source.y,iw,ih,x+(w-iw*scale)/2,y+(h-ih*scale)/2,iw*scale,ih*scale);ctx.restore();
 }
 export const validUUID=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 export function scriptFor(slots,link,face,full=true) {

@@ -16,6 +16,7 @@ Ouvrir http://127.0.0.1:4173. Ne pas ouvrir directement index.html via file:// (
 
 1. Choisir **Titre** ou **Démo**, puis importer une vidéo. Choisir début, fin et cadence d’extraction. Cliquer sur **Extraire les images**. L’exemple intégré permet de tester sans fichier.
 2. Cliquer sur les vignettes pour inclure/exclure des images, ou utiliser les actions groupées.
+   Pour **rogner / crop**, descendre sous les vignettes et dessiner un rectangle sur l’image. Le curseur « Image de référence » permet de choisir une autre frame pour cadrer. Les champs Gauche, Haut, Largeur et Hauteur permettent aussi un réglage au clavier. La zone s’applique à toute l’animation, à l’aperçu et au PNG ; la grille automatique est recalculée selon ses proportions. **Réinitialiser** restaure l’image entière. Titre et Démo gardent chacun leur cadrage. Une nouvelle extraction remet le cadrage à zéro ; aucune nouvelle extraction n’est nécessaire pour modifier le crop.
 3. Régler les FPS de lecture, le sens, la résolution, le cadrage et les colonnes. L’aperçu respecte le cadrage de la texture. La cadence d’extraction et celle de lecture sont indépendantes.
 4. Télécharger la texture PNG. Les images sont rangées de gauche à droite puis de haut en bas. Les cases inutilisées restent transparentes et sont exclues du nombre de frames LSL.
 5. Importer la texture dans Second Life, copier son UUID et le saisir dans le champ correspondant. Faire de même pour l’autre animation si nécessaire.

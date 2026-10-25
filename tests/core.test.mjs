@@ -1,6 +1,22 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {gridFor,scriptFor,validUUID} from '../core.mjs';
+import {gridFor,scriptFor,validUUID,cropRect,drawFit} from '../core.mjs';
+test('le crop normalisé conserve la même zone sur des images de tailles différentes',()=>{
+ const crop={x:.25,y:.1,width:.5,height:.6};
+ assert.deepEqual(cropRect({width:1000,height:500},crop),{x:250,y:50,width:500,height:300});
+ assert.deepEqual(cropRect({width:500,height:250},crop),{x:125,y:25,width:250,height:150});
+});
+test('le crop reste dans les limites de l’image',()=>{
+ const r=cropRect({width:100,height:100},{x:2,y:-1,width:2,height:-1});
+ assert.equal(r.x,99);assert.equal(r.y,0);assert.ok(r.width>0&&r.x+r.width<=100);assert.ok(r.height>0&&r.y+r.height<=100);
+});
+test('le rendu prélève la zone rognée puis conserve ses proportions',()=>{
+ let args;const ctx={save(){},beginPath(){},rect(){},clip(){},restore(){},drawImage(...a){args=a;}};
+ const image={width:1000,height:500};drawFit(ctx,image,0,0,200,200,'contain',{x:.25,y:0,width:.5,height:1});
+ assert.deepEqual(args,[image,250,0,500,500,0,0,200,200]);
+ drawFit(ctx,image,0,0,200,200,'contain');
+ assert.deepEqual(args,[image,0,0,1000,500,0,50,200,100]);
+});
 test('16 images carrées donnent une grille 4 × 4',()=>assert.deepEqual(gridFor(16),{cols:4,rows:4}));
 test('toutes les grilles auto ont assez de cases et divisent 1024 et 2048',()=>{for(let n=1;n<=256;n++)for(const aspect of [.5,1,2]){const {cols,rows}=gridFor(n,aspect);assert.ok(cols*rows>=n);assert.equal(1024%cols,0);assert.equal(2048%rows,0);}});
 test('colonnes manuelles et dépassement',()=>{assert.deepEqual(gridFor(17,1,'4'),{cols:4,rows:8});assert.throws(()=>gridFor(256,1,'1'));});
