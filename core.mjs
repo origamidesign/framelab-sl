@@ -21,6 +21,32 @@ export function gridFor(count, aspect = 1, requested = 'auto') {
   if(!best) throw new Error('Cette grille ne peut pas contenir toutes les images. Augmentez le nombre de colonnes.');
   return {cols:best.cols,rows:best.rows};
 }
+export function cropHit(crop,point,tolerance={x:.02,y:.02}) {
+  if(!crop)return 'draw';
+  const right=crop.x+crop.width,bottom=crop.y+crop.height;
+  const nearX=point.x>=crop.x-tolerance.x&&point.x<=right+tolerance.x;
+  const nearY=point.y>=crop.y-tolerance.y&&point.y<=bottom+tolerance.y;
+  if(!nearX||!nearY)return 'draw';
+  const horizontal=Math.abs(point.x-crop.x)<=tolerance.x?'w':Math.abs(point.x-right)<=tolerance.x?'e':'';
+  const vertical=Math.abs(point.y-crop.y)<=tolerance.y?'n':Math.abs(point.y-bottom)<=tolerance.y?'s':'';
+  if(horizontal||vertical)return vertical+horizontal;
+  return point.x>=crop.x&&point.x<=right&&point.y>=crop.y&&point.y<=bottom?'move':'draw';
+}
+export function dragCrop(crop,start,point,mode) {
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const dx=point.x-start.x,dy=point.y-start.y;
+  if(mode==='draw'){
+    const x=clamp(Math.min(start.x,point.x),0,.99),y=clamp(Math.min(start.y,point.y),0,.99);
+    return {x,y,width:clamp(Math.abs(dx),.01,1-x),height:clamp(Math.abs(dy),.01,1-y)};
+  }
+  if(mode==='move')return {...crop,x:clamp(crop.x+dx,0,1-crop.width),y:clamp(crop.y+dy,0,1-crop.height)};
+  let left=crop.x,top=crop.y,right=left+crop.width,bottom=top+crop.height;
+  if(mode.includes('w'))left=clamp(left+dx,0,right-.01);
+  if(mode.includes('e'))right=clamp(right+dx,left+.01,1);
+  if(mode.includes('n'))top=clamp(top+dy,0,bottom-.01);
+  if(mode.includes('s'))bottom=clamp(bottom+dy,top+.01,1);
+  return {x:left,y:top,width:right-left,height:bottom-top};
+}
 export function cropRect(image,crop) {
   const width=image.width,height=image.height;
   if(!crop) return {x:0,y:0,width,height};

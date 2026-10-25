@@ -1,6 +1,36 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {gridFor,scriptFor,validUUID,cropRect,drawFit,videoFrameCount} from '../core.mjs';
+import {gridFor,scriptFor,validUUID,cropRect,cropHit,dragCrop,drawFit,videoFrameCount} from '../core.mjs';
+test('le crop distingue intérieur, extérieur, les quatre bords et les quatre coins',()=>{
+ const crop={x:.2,y:.2,width:.6,height:.6};
+ for(const [x,y,mode] of [[.5,.5,'move'],[0,0,'draw'],[.2,.5,'w'],[.8,.5,'e'],[.5,.2,'n'],[.5,.8,'s'],[.2,.2,'nw'],[.8,.2,'ne'],[.2,.8,'sw'],[.8,.8,'se']])assert.equal(cropHit(crop,{x,y}),mode);
+ assert.equal(cropHit(null,{x:.5,y:.5}),'draw');
+});
+test('déplacer le crop conserve sa taille et bloque aux limites',()=>{
+ const crop={x:.2,y:.2,width:.5,height:.4};
+ assert.deepEqual(dragCrop(crop,{x:.3,y:.3},{x:1,y:1},'move'),{x:.5,y:.6,width:.5,height:.4});
+ assert.deepEqual(dragCrop(crop,{x:.3,y:.3},{x:0,y:0},'move'),{x:0,y:0,width:.5,height:.4});
+ assert.equal(crop.x,.2);
+});
+test('redimensionner chaque bord ou coin garde le bord opposé et une taille positive',()=>{
+ const crop={x:.2,y:.2,width:.5,height:.4};
+ for(const mode of ['n','s','e','w','nw','ne','sw','se']){
+  const r=dragCrop(crop,{x:.5,y:.5},{x:.6,y:.6},mode);
+  if(!mode.includes('w'))assert.equal(r.x,crop.x);
+  if(!mode.includes('n'))assert.equal(r.y,crop.y);
+  if(!mode.includes('e'))assert.ok(Math.abs(r.x+r.width-.7)<1e-10);
+  if(!mode.includes('s'))assert.ok(Math.abs(r.y+r.height-.6)<1e-10);
+  for(const point of [{x:-10,y:-10},{x:10,y:10}]){
+   const b=dragCrop(crop,{x:.5,y:.5},point,mode);
+   assert.ok(b.x>=0&&b.y>=0&&b.x+b.width<=1+1e-10&&b.y+b.height<=1+1e-10);
+   assert.ok(b.width>=.01-1e-10&&b.height>=.01-1e-10);
+  }
+ }
+});
+test('un nouveau cadre peut être dessiné dans les deux sens',()=>{
+ const a=dragCrop(null,{x:.2,y:.2},{x:.8,y:.8},'draw');
+ assert.deepEqual(dragCrop(null,{x:.8,y:.8},{x:.2,y:.2},'draw'),a);
+});
 test('la vidéo entière est échantillonnée aux FPS choisis',()=>{
  assert.equal(videoFrameCount(12,10),120);
  assert.equal(videoFrameCount(3.25,10),33);

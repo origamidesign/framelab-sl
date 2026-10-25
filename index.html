@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#111522"><title>FrameLab — Textures animées pour Second Life</title><link rel="stylesheet" href="style.css?v=20261025-4"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#111522"><title>FrameLab — Textures animées pour Second Life</title><link rel="stylesheet" href="style.css?v=20261025-5"></head>
 <body>
 <header><a class="brand" href="./"><span class="logo">▦</span> FrameLab <small>POUR SECOND LIFE</small></a><span class="local">● Traitement 100 % local</span></header>
 <main>
@@ -14,7 +14,7 @@
 <progress id="progress" max="1" value="0" hidden></progress><p id="status" role="status" aria-live="polite">Tout reste sur votre ordinateur. Aucun fichier n’est envoyé.</p>
 <section id="crop-section" class="crop-section">
 <div class="section-title"><h2>Rogner l’image</h2><button id="crop-reset">Réinitialiser</button></div>
-<p>Dessinez un rectangle sur l’image pour garder cette zone dans toute l’animation. Vous pouvez recommencer à tout moment.</p>
+<p>Dessinez votre cadre, puis glissez son intérieur pour le déplacer. Tirez un bord ou une poignée pour l’agrandir ou le réduire. Dessinez à l’extérieur pour créer un nouveau cadre, ou cliquez sur Réinitialiser.</p>
 <p id="crop-empty">Importez votre vidéo puis cliquez sur « Extraire les images » pour cadrer la zone à conserver.</p>
 <div id="crop-controls" hidden>
 <label>Image de référence <input id="crop-frame" type="range" min="0" max="0" value="0"></label>
@@ -33,7 +33,7 @@
 <section class="panel script-panel"><div class="section-title"><div><span class="eyebrow">LA DERNIÈRE ÉTAPE</span><h2>Votre script, prêt pour Second Life.</h2></div><button id="download-script">↓ Télécharger .lsl</button></div><p>Importez chaque texture dans SL, copiez son UUID puis collez-le ci-dessous. Le script complet démarre sur Titre ; un clic sur l’objet alterne avec Démo si elle est prête.</p><div class="script-fields"><label>UUID · Titre<input id="uuid-titre" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" spellcheck="false"></label><label>UUID · Démo<input id="uuid-demo" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" spellcheck="false"></label><label>Prim liée<input id="link" type="number" value="2" min="-4" max="256"></label><label>Face<input id="face" type="number" value="2" min="-1" max="8"></label></div><div class="code-head"><span>LSL · <select id="script-mode" aria-label="Type de script"><option value="full">Script complet</option><option value="functions">Fonctions seules</option></select></span><button id="copy">Copier le code</button></div><pre><code id="code"></code></pre><p id="script-status" role="status"></p></section>
 <footer><span>FrameLab · Vidéo → Frames → Texture → Second Life</span><a href="https://create.secondlife.com/script/lsl-reference/functions/llsetlinktextureanim/" target="_blank" rel="noopener">Documentation LSL ↗</a></footer>
 </main><script type="module">
-import('./app.js?v=20261025-4').catch(error=>{
+import('./app.js?v=20261025-5').catch(error=>{
   console.error(error);
   document.getElementById('status').textContent='Le chargement de l’application a échoué. Rechargez avec Ctrl + F5 après la fin du déploiement GitHub Pages.';
 });
