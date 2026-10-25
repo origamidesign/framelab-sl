@@ -56,6 +56,10 @@ export function cropRect(image,crop) {
 }
 export function drawFit(ctx,image,x,y,w,h,fit='contain',crop=null) {
   const source=cropRect(image,crop),iw=source.width,ih=source.height;
+  if(fit==='stretch'){
+    ctx.drawImage(image,source.x,source.y,iw,ih,x,y,w,h);
+    return;
+  }
   const scale=fit==='cover'?Math.max(w/iw,h/ih):Math.min(w/iw,h/ih);
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
   ctx.drawImage(image,source.x,source.y,iw,ih,x+(w-iw*scale)/2,y+(h-ih*scale)/2,iw*scale,ih*scale);ctx.restore();

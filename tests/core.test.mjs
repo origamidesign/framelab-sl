@@ -57,6 +57,14 @@ test('le rendu prélève la zone rognée puis conserve ses proportions',()=>{
  drawFit(ctx,image,0,0,200,200,'contain');
  assert.deepEqual(args,[image,0,0,1000,500,0,50,200,100]);
 });
+test('le mode SL remplit toute la cellule sans marge ni perte du cadrage',()=>{
+ let args;const ctx={drawImage(...a){args=a;}};
+ const image={width:640,height:480};
+ drawFit(ctx,image,512,1024,512,512,'stretch');
+ assert.deepEqual(args,[image,0,0,640,480,512,1024,512,512]);
+ drawFit(ctx,image,0,0,256,256,'stretch',{x:.25,y:.25,width:.5,height:.5});
+ assert.deepEqual(args,[image,160,120,320,240,0,0,256,256]);
+});
 test('16 images carrées donnent une grille 4 × 4',()=>assert.deepEqual(gridFor(16),{cols:4,rows:4}));
 test('toutes les grilles auto ont assez de cases et divisent 1024 et 2048',()=>{for(let n=1;n<=256;n++)for(const aspect of [.5,1,2]){const {cols,rows}=gridFor(n,aspect);assert.ok(cols*rows>=n);assert.equal(1024%cols,0);assert.equal(2048%rows,0);}});
 test('colonnes manuelles et dépassement',()=>{assert.deepEqual(gridFor(17,1,'4'),{cols:4,rows:8});assert.throws(()=>gridFor(256,1,'1'));});
