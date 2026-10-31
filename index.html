@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111522"><title>FrameLab — Textures animées pour Second Life</title>
-  <link rel="stylesheet" href="style.css?v=20261031-polish">
+  <link rel="stylesheet" href="style.css?v=20261031-export">
 </head>
 <body>
 <div class="origami-background" aria-hidden="true">
@@ -63,8 +63,17 @@
         <div class="row"><label>Colonnes<select id="columns"><option value="auto">Automatique</option><option>1</option><option>2</option><option>4</option><option>8</option><option>16</option><option>32</option></select></label><label>Cadrage<select id="fit"><option value="stretch">Second Life — sans marges</option><option value="contain">Conserver les proportions (marges)</option><option value="cover">Remplir en recadrant</option></select></label></div>
         <p class="help">Le mode Second Life remplit chaque case avec toute l’image. Sur SL, utilisez une face aux proportions de votre cadrage pour retrouver son aspect normal.</p>
         <label>Sens de lecture<select id="direction"><option value="forward">Normal</option><option value="reverse">Inversé</option><option value="pingpong">Aller-retour</option></select></label>
-        <div id="metrics" class="metrics">Sélectionnez des images pour calculer la grille.</div><button id="export" class="primary" disabled>↓ Télécharger la texture PNG</button>
-        <details><summary>Voir la planche de texture</summary><canvas id="atlas" width="1024" height="1024" class="atlas checker"></canvas></details>
+        <div id="metrics" class="metrics" hidden>Sélectionnez des images pour calculer la grille.</div>
+        <div class="export-card" aria-labelledby="export-heading">
+          <div class="export-card-heading"><div><span class="eyebrow">VOTRE TEXTURE</span><h3 id="export-heading">Prête pour Second Life</h3></div><span id="export-state" class="export-state">En attente</span></div>
+          <div class="export-overview"><div class="export-thumbnail checker"><canvas id="export-thumbnail" width="240" height="240" aria-label="Miniature de la planche de texture"></canvas><span id="export-empty">▧</span></div><div class="export-identity"><strong id="export-name">Animation Titre</strong><span>Planche PNG · sans compression avec perte</span><span id="export-resolution">1024 × 1024 px</span></div></div>
+          <dl class="export-facts"><div><dt>Images</dt><dd id="export-frames">—</dd></div><div><dt>Grille</dt><dd id="export-grid">—</dd></div><div><dt>Pixels / image</dt><dd id="export-cell">—</dd></div><div><dt>Durée / passage</dt><dd id="export-duration">—</dd></div></dl>
+          <p id="export-hint" class="export-hint">Sélectionnez des images pour préparer votre texture.</p>
+          <button id="export" class="primary export-download" disabled><span aria-hidden="true">↓</span><span><strong>Télécharger la texture</strong><small id="export-button-info">PNG · 1024 × 1024</small></span><span aria-hidden="true">↗</span></button>
+          <p id="export-feedback" class="export-feedback" role="status" aria-live="polite"></p>
+          <details class="export-details"><summary>Examiner la planche en grand</summary><canvas id="atlas" width="1024" height="1024" class="atlas checker"></canvas></details>
+          <p class="export-next"><span>ENSUITE</span>Importez le PNG dans SL, puis collez son UUID dans la partie script.</p>
+        </div>
       </section>
     </aside>
   </div>
@@ -77,7 +86,7 @@
   <footer><span>FrameLab · Vidéo → Frames → Texture → Second Life</span><a href="https://create.secondlife.com/script/lsl-reference/functions/llsetlinktextureanim/" target="_blank" rel="noopener">Documentation LSL ↗</a></footer>
 </main>
 <script type="module">
-import('./app.js?v=20261031-restored').catch(error => {
+import('./app.js?v=20261031-export').catch(error => {
   console.error(error);
   document.getElementById('status').textContent = 'Le chargement de l’application a échoué. Rechargez avec Ctrl + F5 après la fin du déploiement GitHub Pages.';
 });

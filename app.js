@@ -2,6 +2,7 @@ import {gridFor, drawFit, cropRect, cropHit, dragCrop, videoFrameCount, validUUI
 const $ = id => document.getElementById(id);
 const makeSlot = () => ({frames: [], crop: null, fps: 5, size: 1024, columns: 'auto', fit: 'stretch', direction: 'forward', uuid: '', count: 0, cols: 1, rows: 1});
 const slots = {titre: makeSlot(), demo: makeSlot()};
+let exporting = false;
 let active = 'titre', media = null, mediaURL = null, busy = false, playing = true, previewIndex = 0, lastTime = 0, cropDrag = null;
 const current = () => slots[active];
 const selected = () => current().frames.filter(f => f.selected);
@@ -11,7 +12,7 @@ function lock(value) {
   busy = value;
   for (const el of document.querySelectorAll('.tabs button,#file,#extract,#sample,.extraction input')) el.disabled = value;
   $('extract').disabled = value;
-  $('export').disabled = value || !current().count;
+  $('export').disabled = value || exporting || !current().count;
   $('crop-reset').disabled = value || !current().frames.length;
 }
 function releaseFrames(slot) {
@@ -34,7 +35,7 @@ function update() {
   $('count').textContent = `${list.length} / ${s.frames.length} sélectionnées`;
   $('badge-' + active).textContent = list.length ? `${list.length} images` : 'À créer';
   $('preview-empty').hidden = !!list.length;
-  $('export').disabled = busy || !list.length;
+  $('export').disabled = busy || exporting || !list.length;
   const canvas = $('atlas'); canvas.width = canvas.height = s.size;
   const ctx = canvas.getContext('2d');
   try {
@@ -44,7 +45,7 @@ function update() {
     list.forEach((f, i) => drawFit(ctx, f.bitmap, i % cols * w, Math.floor(i / cols) * h, w, h, s.fit, s.crop));
     $('metrics').textContent = list.length ? `${cols} colonnes × ${rows} lignes · ${w} × ${h} px / image\n${list.length} images · ${(list.length / s.fps).toFixed(2)} s par passage` : 'Sélectionnez des images pour calculer la grille.';
   } catch (e) {s.count = 0; $('metrics').textContent = e.message; $('export').disabled = true;}
-  previewIndex = 0; renderCrop(); updateScript();
+  updateExportCard(); previewIndex = 0; renderCrop(); updateScript();
   try {drawPreview(0);} catch { /* A temporarily invalid grid is explained above. */ }
 }
 function renderFrames() {
@@ -240,9 +241,34 @@ for (const key of ['x', 'y', 'width', 'height']) $('crop-' + key).addEventListen
   current().crop = {x: r.x / image.width, y: r.y / image.height, width: r.width / image.width, height: r.height / image.height}; update();
 });
 function download(blob, name) {const a = document.createElement('a'), url = URL.createObjectURL(blob); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 10000);}
+function updateExportCard() {
+  const s=current(),ready=!!s.count;
+  $('export-name').textContent='Animation '+(active==='titre'?'Titre':'Démo');
+  $('export-heading').textContent=ready?'Prête pour Second Life':'Votre prochaine texture';
+  $('export-state').textContent=ready?'Prête à exporter':'En attente';
+  $('export-state').classList.toggle('ready',ready);
+  $('export-resolution').textContent=s.size+' × '+s.size+' px';
+  $('export-button-info').textContent='PNG · '+s.size+' × '+s.size;
+  $('export-frames').textContent=ready?String(s.count):'—';
+  $('export-grid').textContent=ready?s.cols+' × '+s.rows:'—';
+  $('export-cell').textContent=ready?s.size/s.cols+' × '+s.size/s.rows:'—';
+  $('export-duration').textContent=ready?(s.count/s.fps).toLocaleString('fr-FR',{maximumFractionDigits:2})+' s':'—';
+  $('export-hint').textContent=ready?s.cols+' colonnes · '+s.rows+' lignes · '+s.fps.toLocaleString('fr-FR')+' FPS':$('metrics').textContent;
+  $('export-empty').hidden=ready;$('export-feedback').textContent='';
+  const ctx=$('export-thumbnail').getContext('2d');ctx.clearRect(0,0,240,240);if(ready)ctx.drawImage($('atlas'),0,0,240,240);
+}
 $('export').onclick = () => {
-  const s = current(), name = `framelab-${active}-${s.size}-${s.cols}x${s.rows}-${s.count}frames.png`;
-  $('atlas').toBlob(blob => blob ? download(blob, name) : message('Échec de l’export PNG.'), 'image/png');
+  if(busy||exporting||!current().count)return;
+  const s=current(),name=`framelab-${active}-${s.size}-${s.cols}x${s.rows}-${s.count}frames.png`;
+  exporting=true;$('export').disabled=true;$('export-feedback').textContent='Préparation du PNG…';
+  const finish=blob=>{
+    exporting=false;$('export').disabled=busy||!current().count;
+    if(!blob){$('export-feedback').textContent='Export impossible. Réessayez.';return;}
+    download(blob,name);
+    const size=blob.size>=1048576?(blob.size/1048576).toLocaleString('fr-FR',{maximumFractionDigits:2})+' Mo':Math.max(1,Math.round(blob.size/1024))+' Ko';
+    $('export-feedback').textContent='Téléchargement lancé · '+size;
+  };
+  try{$('atlas').toBlob(finish,'image/png');}catch{finish(null);}
 };
 for (const id of ['uuid-titre', 'uuid-demo', 'link', 'face', 'script-mode']) $(id).addEventListener('input', updateScript);
 $('copy').onclick = async () => {try {await navigator.clipboard.writeText($('code').textContent); $('script-status').textContent = 'Code copié.';} catch {$('script-status').textContent = 'Copie indisponible. Sélectionnez le code ou téléchargez le fichier .lsl.';}};
