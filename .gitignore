@@ -1,0 +1,16 @@
+node_modules/
+*.log
+Thumbs.db
+.DS_Store
+public/
+travail/
+*.zip
+# Modèles commerciaux : ne pas publier
+*.glb
+*.gltf
+*.fbx
+*.blend
+*.dae
+*.obj
+*.stl
+*.3ds

@@ -1,0 +1,1 @@
+{"name":"framelab-sl","version":"1.0.1","private":true,"type":"module","description":"Textures animées pour Second Life, traitement local","scripts":{"dev":"node server.mjs","start":"node server.mjs","test":"node --test tests/*.test.mjs"},"engines":{"node":">=20"}}

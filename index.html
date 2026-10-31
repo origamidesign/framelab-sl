@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111522"><title>FrameLab — Textures animées pour Second Life</title>
+  <link rel="stylesheet" href="style.css?v=20261031-restored">
+</head>
+<body>
+<div class="origami-background" aria-hidden="true">
+  <div class="origami-glow glow-mint"></div><div class="origami-glow glow-blue"></div>
+  <svg class="origami-scene" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" focusable="false">
+    <defs>
+      <linearGradient id="paper-mint" x2="1" y2="1"><stop stop-color="#a7f0ce" stop-opacity=".18"/><stop offset="1" stop-color="#457f91" stop-opacity=".015"/></linearGradient>
+      <linearGradient id="paper-blue" x2="1" y2="1"><stop stop-color="#8aa7f4" stop-opacity=".12"/><stop offset="1" stop-color="#558396" stop-opacity=".01"/></linearGradient>
+    </defs>
+    <g class="paper-fold fold-one">
+      <path fill="url(#paper-mint)" d="M1000 240 1460 40 1320 400Z"/><path fill="#a7f0ce" fill-opacity=".045" d="m1000 240 320 160-120-116Z"/>
+      <path fill="url(#paper-blue)" d="m1200 284 260-244-140 360 100 170Z"/>
+      <path class="fold-outline" d="m1000 240 460-200-140 360-320-160 200 44L1460 40m-260 244 220 286-100-170"/><path class="fold-signal" d="m1000 240 200 44 260-244"/>
+    </g>
+    <g class="paper-fold fold-two">
+      <path fill="url(#paper-blue)" d="m-120 490 440 170-170 300Z"/><path fill="url(#paper-mint)" d="m-120 490 270 470-50-235 220-65Z"/>
+      <path class="fold-outline" d="m-120 490 440 170-170 300-270-470 220 235 220-65M100 725l50 235"/><path class="fold-signal" d="m-120 490 220 235 220-65"/>
+    </g>
+    <g class="paper-fold fold-three"><path fill="url(#paper-mint)" d="m1080 820 420-140-180 300Z"/><path class="fold-outline" d="m1080 820 420-140-180 300-240-160 170 30 250-170m-250 170 70 130"/></g>
+    <g class="digital-traces"><path d="M0 320h180l90-90h260M1600 580h-150l-80 80h-170M420 1000V900l80-80V700"/><circle cx="530" cy="230" r="3"/><circle cx="1200" cy="660" r="3"/><circle cx="500" cy="700" r="3"/></g>
+  </svg>
+</div>
+<header>
+  <div class="header-branding"><a class="brand" href="./"><span class="logo">▦</span> FrameLab <small>POUR SECOND LIFE</small></a><span class="creator-logo"><img src="assets/origami-design.png" alt="Origami Design" width="2414" height="873"></span></div>
+  <span class="local">● Traitement 100 % local</span>
+</header>
+<main>
+  <div class="intro"><span class="eyebrow">VOTRE VIDÉO, IMAGE PAR IMAGE</span><h1>Donnez vie à vos textures.</h1><p>Importez un clip, gardez les bonnes images et emportez votre texture avec son script LSL.</p></div>
+  <nav class="tabs" aria-label="Animation active"><button class="active" data-slot="titre">01 <b>Titre</b><span id="badge-titre">À créer</span></button><button data-slot="demo">02 <b>Démo</b><span id="badge-demo">À créer</span></button></nav>
+  <div class="layout">
+    <section class="editor panel">
+      <div class="section-title"><h2><i>1</i> Votre source</h2><button id="sample" class="text-button">Essayer un exemple ↗</button></div>
+      <label class="drop" id="drop"><input id="file" type="file" accept="video/*,image/gif"><span class="upload">↑</span><strong id="filename">Déposez une vidéo ou un GIF</strong><span>ou cliquez pour choisir un fichier</span><small>MP4, WebM, MOV selon votre navigateur · GIF via ImageDecoder</small></label>
+      <video id="source" muted playsinline controls hidden></video>
+      <div class="row extraction"><label>Images par seconde (FPS)<input id="extract-fps" type="number" value="10" min="0.01" max="60" step="0.01"></label><button id="extract">Extraire toute la vidéo</button></div>
+      <p class="help">Toute la vidéo est utilisée. Réglez les FPS pour choisir le nombre d’images à extraire, puis sélectionnez celles à conserver.</p>
+      <progress id="progress" max="1" value="0" hidden></progress><p id="status" role="status" aria-live="polite">Tout reste sur votre ordinateur. Aucun fichier n’est envoyé.</p>
+      <section class="crop-section">
+        <div class="section-title"><h2>Rogner l’image</h2><button id="crop-reset" disabled>Réinitialiser</button></div>
+        <p>Dessinez votre cadre, puis glissez son intérieur pour le déplacer. Tirez un bord ou une poignée pour l’agrandir ou le réduire. Dessinez à l’extérieur pour créer un nouveau cadre.</p>
+        <p id="crop-empty">Importez une vidéo et extrayez ses images pour cadrer la zone à conserver.</p>
+        <div id="crop-controls" hidden>
+          <label>Image de référence<input id="crop-frame" type="range" min="0" max="0" value="0"></label>
+          <canvas id="crop-canvas" width="512" height="512" aria-label="Zone de cadrage : dessiner, déplacer ou redimensionner le rectangle. Les champs suivants permettent aussi un réglage au clavier."></canvas>
+          <div class="row crop-fields"><label>Gauche (%)<input id="crop-x" type="number" min="0" max="99" step="0.1" value="0"></label><label>Haut (%)<input id="crop-y" type="number" min="0" max="99" step="0.1" value="0"></label><label>Largeur (%)<input id="crop-width" type="number" min="1" max="100" step="0.1" value="100"></label><label>Hauteur (%)<input id="crop-height" type="number" min="1" max="100" step="0.1" value="100"></label></div>
+          <p id="crop-info" role="status"></p>
+        </div>
+      </section>
+      <div class="section-title frames-title"><h2><i>2</i> Sélection des images</h2><span id="count">0 image</span></div>
+      <div class="toolbar"><button id="all">Tout sélectionner</button><button id="none">Tout désélectionner</button><button id="alternate">Une sur deux</button><button id="invert">Inverser</button></div>
+      <div id="frames" class="frames"><div class="empty"><span>▧</span>Vos images apparaîtront ici.<small>Cliquez sur une image pour l’inclure ou l’exclure.</small></div></div>
+    </section>
+    <aside>
+      <section class="panel preview-panel"><div class="section-title"><h2>Aperçu de l’animation</h2><span class="pill">EN BOUCLE</span></div><div class="preview checker"><canvas id="preview" width="512" height="512" aria-label="Aperçu animé"></canvas><span id="preview-empty">Votre animation commence ici</span></div><div class="playback"><button id="play">Ⅱ Pause</button><label>Vitesse<input id="fps" type="number" min="0.01" max="60" step="0.01" value="5"> FPS</label></div></section>
+      <section class="panel settings"><h2><i>3</i> Texture & export</h2>
+        <label>Résolution de la texture<select id="size"><option value="1024">1024 × 1024 — Standard</option><option value="2048">2048 × 2048 — Haute définition</option></select></label>
+        <div class="row"><label>Colonnes<select id="columns"><option value="auto">Automatique</option><option>1</option><option>2</option><option>4</option><option>8</option><option>16</option><option>32</option></select></label><label>Cadrage<select id="fit"><option value="stretch">Second Life — sans marges</option><option value="contain">Conserver les proportions (marges)</option><option value="cover">Remplir en recadrant</option></select></label></div>
+        <p class="help">Le mode Second Life remplit chaque case avec toute l’image. Sur SL, utilisez une face aux proportions de votre cadrage pour retrouver son aspect normal.</p>
+        <label>Sens de lecture<select id="direction"><option value="forward">Normal</option><option value="reverse">Inversé</option><option value="pingpong">Aller-retour</option></select></label>
+        <div id="metrics" class="metrics">Sélectionnez des images pour calculer la grille.</div><button id="export" class="primary" disabled>↓ Télécharger la texture PNG</button>
+        <details><summary>Voir la planche de texture</summary><canvas id="atlas" width="1024" height="1024" class="atlas checker"></canvas></details>
+      </section>
+    </aside>
+  </div>
+  <section class="panel script-panel">
+    <div class="section-title"><div><span class="eyebrow">LA DERNIÈRE ÉTAPE</span><h2>Votre script, prêt pour Second Life.</h2></div><button id="download-script" disabled>↓ Télécharger .lsl</button></div>
+    <p>Importez chaque texture dans SL, copiez son UUID puis collez-le ci-dessous. Le script complet démarre sur Titre ; un clic sur l’objet alterne avec Démo si elle est prête.</p>
+    <div class="script-fields"><label>UUID · Titre<input id="uuid-titre" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" spellcheck="false"></label><label>UUID · Démo<input id="uuid-demo" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" spellcheck="false"></label><label>Prim liée<input id="link" type="number" min="-4" max="256" value="2"></label><label>Face<input id="face" type="number" min="-1" max="8" value="2"></label></div>
+    <div class="code-head"><span>LSL · <select id="script-mode" aria-label="Type de script"><option value="full">Script complet</option><option value="functions">Fonctions seules</option></select></span><button id="copy" disabled>Copier le code</button></div><pre><code id="code"></code></pre><p id="script-status" role="status"></p>
+  </section>
+  <footer><span>FrameLab · Vidéo → Frames → Texture → Second Life</span><a href="https://create.secondlife.com/script/lsl-reference/functions/llsetlinktextureanim/" target="_blank" rel="noopener">Documentation LSL ↗</a></footer>
+</main>
+<script type="module">
+import('./app.js?v=20261031-restored').catch(error => {
+  console.error(error);
+  document.getElementById('status').textContent = 'Le chargement de l’application a échoué. Rechargez avec Ctrl + F5 après la fin du déploiement GitHub Pages.';
+});
+</script>
+</body>
+</html>
