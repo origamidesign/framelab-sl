@@ -180,7 +180,7 @@ $('extract').onclick = async () => {
         $('progress').value = (i + 1) / count;
       }
     }
-    releaseFrames(slot); slot.frames = fresh; slot.crop = null; previewIndex=0; $('crop-frame').value = 0; renderFrames();
+    releaseFrames(slot); slot.frames = fresh; previewIndex=0; $('crop-frame').value = 0; renderFrames();
     message(`${fresh.length} images extraites. Cliquez sur les images à conserver et ajustez le crop.`);
   } catch (e) {for (const f of fresh) {f.bitmap.close(); URL.revokeObjectURL(f.url);} message(e.message);}
   finally {$('progress').hidden = true; lock(false); update();}
@@ -197,7 +197,7 @@ $('sample').onclick = async () => {
       ctx.fillStyle = glow; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = '#f2f5fc'; ctx.textAlign = 'center'; ctx.font = 'bold 42px system-ui'; ctx.fillText('FrameLab', 256, 270);
       fresh.push(await makeFrame(canvas, i / 10));
     }
-    releaseFrames(current()); current().frames = fresh; current().crop = null; previewIndex=0; $('crop-frame').value = 0;
+    releaseFrames(current()); current().frames = fresh; previewIndex=0; $('crop-frame').value = 0;
     renderFrames(); message('Exemple chargé : 16 images. Testez la sélection, le crop et les exports.');
   } catch (e) {for (const f of fresh) {f.bitmap.close(); URL.revokeObjectURL(f.url);} message(e.message);}
   finally {lock(false); update();}
