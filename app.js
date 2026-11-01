@@ -45,21 +45,32 @@ function update() {
     list.forEach((f, i) => drawFit(ctx, f.bitmap, i % cols * w, Math.floor(i / cols) * h, w, h, s.fit, s.crop));
     $('metrics').textContent = list.length ? `${cols} colonnes × ${rows} lignes · ${w} × ${h} px / image\n${list.length} images · ${(list.length / s.fps).toFixed(2)} s par passage` : 'Sélectionnez des images pour calculer la grille.';
   } catch (e) {s.count = 0; $('metrics').textContent = e.message; $('export').disabled = true;}
-  updateExportCard(); renderCrop(); updateScript();
+  updateExportCard(); renderCrop(); refreshThumbnails(); updateScript();
   try {drawPreview(previewIndex);} catch { /* A temporarily invalid grid is explained above. */ }
 }
 function renderFrames() {
   const container = $('frames'); container.replaceChildren();
   if (!current().frames.length) {container.innerHTML = '<div class="empty"><span>▧</span>Vos images apparaîtront ici.<small>Cliquez sur une image pour l’inclure ou l’exclure.</small></div>'; return;}
   current().frames.forEach((frame, i) => {
-    const button = document.createElement('button'), image = document.createElement('img'), caption = document.createElement('span');
-    image.src = frame.url; image.alt = `Image ${i + 1}`; image.loading = 'lazy'; button.dataset.frameIndex=String(i);
+    const button = document.createElement('button'), image = document.createElement('canvas'), caption = document.createElement('span');
+    image.setAttribute('role','img'); image.setAttribute('aria-label',`Image ${i + 1} — zone conservée`); button.dataset.frameIndex=String(i);
     button.title = `Image ${i + 1} — ${frame.time.toFixed(2)} s`;
     const paint = () => {button.className = 'frame' + (frame.selected ? ' selected' : ''); button.setAttribute('aria-pressed', String(frame.selected)); caption.textContent = `${String(i + 1).padStart(3, '0')}  ${frame.selected ? '✓' : '−'}`;};
     paint(); button.append(image, caption);
     button.onclick = () => {if (busy) return; frame.selected = !frame.selected; paint(); update(); if(frame.selected){const sequence=playbackSequence(selected().length,current().direction);previewIndex=Math.max(0,sequence.indexOf(selected().indexOf(frame)));setPlaying(false);drawPreview(previewIndex);}};
     container.append(button);
   });
+}
+function refreshThumbnails() {
+  const s=current(),key=JSON.stringify(s.crop);
+  for(const button of $('frames').children){
+    const frame=s.frames[Number(button.dataset.frameIndex)],canvas=button.children[0];
+    if(!frame||!canvas?.getContext||canvas.dataset.cropKey===key)continue;
+    const r=cropRect(frame.bitmap,s.crop),scale=Math.min(1,480/r.width,480/r.height);
+    canvas.width=Math.max(1,Math.round(r.width*scale));canvas.height=Math.max(1,Math.round(r.height*scale));
+    canvas.getContext('2d').drawImage(frame.bitmap,r.x,r.y,r.width,r.height,0,0,canvas.width,canvas.height);
+    canvas.dataset.cropKey=key;
+  }
 }
 function drawPreview(index) {
   const s=current(),list=selected(),sequence=playbackSequence(list.length,s.direction),ctx=$('preview').getContext('2d');ctx.clearRect(0,0,512,512);

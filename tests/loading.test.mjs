@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 test('le bouton ouvre le fichier, se réactive après import et après erreur', async () => {
   class Element extends EventTarget {
-    value = ''; disabled = false; hidden = false; textContent = ''; files = []; clicks = 0;
+    value = ''; disabled = false; hidden = false; textContent = ''; files = []; clicks = 0; children = [];
     classList = {toggle(){}, add(){}, remove(){}};
     click(){this.clicks++;} pause(){} removeAttribute(){delete this.src;} setAttribute(){}
     getContext(){return {clearRect(){}};}

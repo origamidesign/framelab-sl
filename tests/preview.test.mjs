@@ -18,7 +18,7 @@ test('navigation, numéros source, exclusions et taille des vignettes',async()=>
     append(...children){this.children.push(...children);}replaceChildren(...children){this.children=children;}
     querySelector(selector){const n=selector.match(/data-frame-index="(\d+)"/);return n?this.children.find(c=>c.dataset.frameIndex===n[1]):null;}
     getBoundingClientRect(){return {width:512,height:512,left:0,top:0};}
-    getContext(){return {clearRect(){},drawImage(){},fillRect(){},strokeRect(){},fillText(){},beginPath(){},rect(){},arc(){},clip(){},fill(){},stroke(){},save(){},restore(){},createRadialGradient(){return {addColorStop(){}};}};}
+    getContext(){return {clearRect(){},drawImage:(...args)=>{this.lastDraw=args;},fillRect(){},strokeRect(){},fillText(){},beginPath(){},rect(){},arc(){},clip(){},fill(){},stroke(){},save(){},restore(){},createRadialGradient(){return {addColorStop(){}};}};}
     toBlob(callback){callback(new Blob(['png'],{type:'image/png'}));}
   }
   const elements=new Map(),get=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
@@ -58,7 +58,11 @@ test('navigation, numéros source, exclusions et taille des vignettes',async()=>
     // The crop survives all regeneration paths and remains independent between slots.
     for(const [key,value] of Object.entries({x:10,y:20,width:30,height:40}))get('crop-'+key).value=String(value);
     get('crop-width').dispatchEvent(new Event('change'));
-    const assertCrop=()=>{for(const [key,value] of Object.entries({x:10,y:20,width:30,height:40}))assert.equal(Number(get('crop-'+key).value),value,'crop '+key);};
+    const assertCrop=()=>{
+      for(const [key,value] of Object.entries({x:10,y:20,width:30,height:40}))assert.equal(Number(get('crop-'+key).value),value,'crop '+key);
+      const thumbnail=get('frames').children[0].children[0];
+      for(const [i,value] of [51.2,102.4,153.6,204.8].entries())assert.ok(Math.abs(thumbnail.lastDraw[i+1]-value)<1e-8,'la vignette prélève uniquement le crop');
+    };
     assertCrop();
     get('fps').value='12';get('fps').dispatchEvent(new Event('change'));assertCrop();
     get('size').value='2048';get('size').dispatchEvent(new Event('change'));assertCrop();
@@ -72,5 +76,6 @@ test('navigation, numéros source, exclusions et taille des vignettes',async()=>
     demo.onclick();await get('sample').onclick();assert.equal(Number(get('crop-width').value),100);
     get('crop-reset').onclick();titre.onclick();assertCrop();
     get('crop-reset').onclick();assert.equal(Number(get('crop-width').value),100);assert.equal(Number(get('crop-x').value),0);
+    assert.deepEqual(get('frames').children[0].children[0].lastDraw.slice(1,5),[0,0,512,512]);
   }finally{delete globalThis.document;delete globalThis.requestAnimationFrame;delete globalThis.createImageBitmap;}
 });
