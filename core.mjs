@@ -1,5 +1,13 @@
 export const MAX_FRAMES = 256;
 
+// Positions in the selected list, in the exact order used by the preview slider.
+export function playbackSequence(count, direction = 'forward') {
+  const indices = Array.from({length: count}, (_, i) => i);
+  if (direction === 'reverse') return indices.reverse();
+  if (direction === 'pingpong' && count > 1) return indices.concat(indices.slice(1, -1).reverse());
+  return indices;
+}
+
 export function videoFrameCount(duration, fps) {
   if (!Number.isFinite(duration) || duration <= 0) throw new Error('Durée vidéo invalide.');
   if (!Number.isFinite(fps) || fps < .01 || fps > 60) throw new Error('Choisissez des FPS entre 0,01 et 60.');

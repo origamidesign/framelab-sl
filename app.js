@@ -1,4 +1,4 @@
-import {gridFor, drawFit, cropRect, cropHit, dragCrop, videoFrameCount, validUUID, scriptFor} from './core.mjs?v=20261031-restored';
+import {playbackSequence, gridFor, drawFit, cropRect, cropHit, dragCrop, videoFrameCount, validUUID, scriptFor} from './core.mjs?v=20261101-preview';
 const $ = id => document.getElementById(id);
 const makeSlot = () => ({frames: [], crop: null, fps: 5, size: 1024, columns: 'auto', fit: 'stretch', direction: 'forward', uuid: '', count: 0, cols: 1, rows: 1});
 const slots = {titre: makeSlot(), demo: makeSlot()};
@@ -45,40 +45,54 @@ function update() {
     list.forEach((f, i) => drawFit(ctx, f.bitmap, i % cols * w, Math.floor(i / cols) * h, w, h, s.fit, s.crop));
     $('metrics').textContent = list.length ? `${cols} colonnes × ${rows} lignes · ${w} × ${h} px / image\n${list.length} images · ${(list.length / s.fps).toFixed(2)} s par passage` : 'Sélectionnez des images pour calculer la grille.';
   } catch (e) {s.count = 0; $('metrics').textContent = e.message; $('export').disabled = true;}
-  updateExportCard(); previewIndex = 0; renderCrop(); updateScript();
-  try {drawPreview(0);} catch { /* A temporarily invalid grid is explained above. */ }
+  updateExportCard(); renderCrop(); updateScript();
+  try {drawPreview(previewIndex);} catch { /* A temporarily invalid grid is explained above. */ }
 }
 function renderFrames() {
   const container = $('frames'); container.replaceChildren();
   if (!current().frames.length) {container.innerHTML = '<div class="empty"><span>▧</span>Vos images apparaîtront ici.<small>Cliquez sur une image pour l’inclure ou l’exclure.</small></div>'; return;}
   current().frames.forEach((frame, i) => {
     const button = document.createElement('button'), image = document.createElement('img'), caption = document.createElement('span');
-    image.src = frame.url; image.alt = `Image ${i + 1}`; image.loading = 'lazy';
+    image.src = frame.url; image.alt = `Image ${i + 1}`; image.loading = 'lazy'; button.dataset.frameIndex=String(i);
     button.title = `Image ${i + 1} — ${frame.time.toFixed(2)} s`;
     const paint = () => {button.className = 'frame' + (frame.selected ? ' selected' : ''); button.setAttribute('aria-pressed', String(frame.selected)); caption.textContent = `${String(i + 1).padStart(3, '0')}  ${frame.selected ? '✓' : '−'}`;};
     paint(); button.append(image, caption);
-    button.onclick = () => {if (busy) return; frame.selected = !frame.selected; paint(); update();};
+    button.onclick = () => {if (busy) return; frame.selected = !frame.selected; paint(); update(); if(frame.selected){const sequence=playbackSequence(selected().length,current().direction);previewIndex=Math.max(0,sequence.indexOf(selected().indexOf(frame)));setPlaying(false);drawPreview(previewIndex);}};
     container.append(button);
   });
 }
 function drawPreview(index) {
-  const s = current(), list = selected(), ctx = $('preview').getContext('2d'); ctx.clearRect(0, 0, 512, 512);
-  if (!list.length) return;
-  let n = index % list.length;
-  if (s.direction === 'reverse') n = list.length - 1 - n;
-  if (s.direction === 'pingpong' && list.length > 1) {const p = index % (2 * list.length - 2); n = p < list.length ? p : 2 * list.length - 2 - p;}
-  const grid = gridFor(list.length, aspect(list[0].bitmap, s.crop), s.columns);
-  const ratio = s.fit === 'stretch' ? aspect(list[0].bitmap, s.crop) : grid.rows / grid.cols;
-  let w = 512, h = 512 / ratio; if (h > 512) {h = 512; w = 512 * ratio;}
-  drawFit(ctx, list[n].bitmap, (512 - w) / 2, (512 - h) / 2, w, h, s.fit, s.crop);
+  const s=current(),list=selected(),sequence=playbackSequence(list.length,s.direction),ctx=$('preview').getContext('2d');ctx.clearRect(0,0,512,512);
+  const seek=$('preview-seek');seek.max=Math.max(0,sequence.length-1);seek.disabled=!list.length;
+  $('preview-prev').disabled=$('preview-next').disabled=!list.length;
+  if(!list.length){previewIndex=0;seek.value=0;$('preview-frame-number').textContent='Aucune image';$('preview-sequence-position').textContent='0 / 0';clearFrameHighlight();return;}
+  previewIndex=Math.max(0,Math.min(sequence.length-1,Math.floor(index)||0));
+  const n=sequence[previewIndex],frame=list[n],sourceIndex=s.frames.indexOf(frame);
+  seek.value=previewIndex;seek.setAttribute('aria-valuetext','Image '+(sourceIndex+1)+' · position '+(previewIndex+1)+' sur '+sequence.length);
+  $('preview-frame-number').textContent='Vignette n° '+(sourceIndex+1);
+  $('preview-sequence-position').textContent=(previewIndex+1)+' / '+sequence.length;
+  highlightFrame(sourceIndex);
+  const grid=gridFor(list.length,aspect(list[0].bitmap,s.crop),s.columns);
+  const ratio=s.fit==='stretch'?aspect(list[0].bitmap,s.crop):grid.rows/grid.cols;
+  let w=512,h=512/ratio;if(h>512){h=512;w=512*ratio;}
+  drawFit(ctx,frame.bitmap,(512-w)/2,(512-h)/2,w,h,s.fit,s.crop);
 }
+let highlightedFrame=null;
+function clearFrameHighlight(){highlightedFrame?.classList.remove('current-frame');highlightedFrame?.removeAttribute('aria-current');highlightedFrame=null;}
+function highlightFrame(sourceIndex){const button=$('frames').querySelector('[data-frame-index="'+sourceIndex+'"]');if(button===highlightedFrame)return;clearFrameHighlight();if(button){button.classList.add('current-frame');button.setAttribute('aria-current','true');highlightedFrame=button;}}
+function setPlaying(value){playing=value;lastTime=performance.now();$('play').textContent=playing?'Ⅱ Pause':'▶ Lecture';$('play').setAttribute('aria-pressed',String(playing));}
+function seekPreview(position){setPlaying(false);drawPreview(position);}
+$('preview-seek').addEventListener('input',()=>seekPreview(Number($('preview-seek').value)));
+$('preview-prev').onclick=()=>seekPreview(Math.max(0,previewIndex-1));
+$('preview-next').onclick=()=>seekPreview(Math.min(playbackSequence(selected().length,current().direction).length-1,previewIndex+1));
+$('thumbnail-size').addEventListener('input',()=>{const size=Math.min(240,Math.max(82,Number($('thumbnail-size').value)||112));$('frames').style.setProperty('--thumbnail-size',size+'px');$('thumbnail-size-value').textContent=size+' px';});
 function animate(time) {
-  if (playing && time - lastTime >= 1000 / current().fps) {try {drawPreview(previewIndex++);} catch {} lastTime = time;}
+  if (playing && time - lastTime >= 1000 / current().fps) {try {const length=playbackSequence(selected().length,current().direction).length;drawPreview(length?(previewIndex+1)%length:0);} catch {} lastTime = time;}
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 for (const button of document.querySelectorAll('[data-slot]')) button.onclick = () => {
-  if (busy || cropDrag) return; active = button.dataset.slot;
+  if (busy || cropDrag) return; active = button.dataset.slot; previewIndex=0;
   for (const b of document.querySelectorAll('[data-slot]')) b.classList.toggle('active', b === button);
   for (const key of settings) $(key).value = current()[key];
   $('crop-frame').value = 0; renderFrames(); update();
@@ -93,7 +107,7 @@ for (const id of ['all', 'none', 'alternate', 'invert']) $(id).onclick = () => {
   if (busy) return; current().frames.forEach((f, i) => f.selected = id === 'all' ? true : id === 'none' ? false : id === 'alternate' ? i % 2 === 0 : !f.selected);
   renderFrames(); update();
 };
-$('play').onclick = () => {playing = !playing; $('play').textContent = playing ? 'Ⅱ Pause' : '▶ Lecture';};
+$('play').onclick=()=>setPlaying(!playing);
 
 export function eventOnce(target, event, action, timeout = 20000) {
   return new Promise((resolve, reject) => {
@@ -166,7 +180,7 @@ $('extract').onclick = async () => {
         $('progress').value = (i + 1) / count;
       }
     }
-    releaseFrames(slot); slot.frames = fresh; slot.crop = null; $('crop-frame').value = 0; renderFrames();
+    releaseFrames(slot); slot.frames = fresh; slot.crop = null; previewIndex=0; $('crop-frame').value = 0; renderFrames();
     message(`${fresh.length} images extraites. Cliquez sur les images à conserver et ajustez le crop.`);
   } catch (e) {for (const f of fresh) {f.bitmap.close(); URL.revokeObjectURL(f.url);} message(e.message);}
   finally {$('progress').hidden = true; lock(false); update();}
@@ -183,7 +197,7 @@ $('sample').onclick = async () => {
       ctx.fillStyle = glow; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = '#f2f5fc'; ctx.textAlign = 'center'; ctx.font = 'bold 42px system-ui'; ctx.fillText('FrameLab', 256, 270);
       fresh.push(await makeFrame(canvas, i / 10));
     }
-    releaseFrames(current()); current().frames = fresh; current().crop = null; $('crop-frame').value = 0;
+    releaseFrames(current()); current().frames = fresh; current().crop = null; previewIndex=0; $('crop-frame').value = 0;
     renderFrames(); message('Exemple chargé : 16 images. Testez la sélection, le crop et les exports.');
   } catch (e) {for (const f of fresh) {f.bitmap.close(); URL.revokeObjectURL(f.url);} message(e.message);}
   finally {lock(false); update();}
